@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
-        internal HttpContext HttpContext => _httpContext;
+        internal ReusableHttpContext HttpContext => _httpContext;
 
         public void InitializeStreams(MessageBody messageBody)
         {

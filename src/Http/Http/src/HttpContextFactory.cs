@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Http
 
         protected virtual HttpContext CreateHttpContext(IFeatureCollection featureCollection)
         {
-            return new DefaultHttpContext(featureCollection);
+            return new ReusableHttpContext(featureCollection);
         }
 
         public void Dispose(HttpContext httpContext)

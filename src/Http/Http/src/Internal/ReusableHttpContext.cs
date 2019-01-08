@@ -30,49 +30,26 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public ReusableHttpContext(IFeatureCollection features)
         {
-            Initialize(features);
+            _features = new FeatureReferences<FeatureInterfaces>(features);
+            _request = new ReusableHttpRequest(this);
+            _response = new ReusableHttpResponse(this);
         }
 
         public void Initialize(IFeatureCollection features)
         {
             _features = new FeatureReferences<FeatureInterfaces>(features);
-
-            if (_request is null)
-            {
-                _request = new ReusableHttpRequest(this);
-            }
-            else
-            {
-                _request.Initialize(this);
-            }
-
-            if (_response is null)
-            {
-                _response = new ReusableHttpResponse(this);
-            }
-            else
-            {
-                _response.Initialize(this);
-            }
-
-            // Only set the ConnectionInfo if it was already allocated
-            if (_connection != null)
-            {
-                _connection.Initialize(features);
-            }
-
-            if (_websockets != null)
-            {
-                _websockets.Initialize(features);
-            }
+            _request.Initialize(this);
+            _response.Initialize(this);
+            _connection?.Initialize(features);
+            _websockets?.Initialize(features);
         }
 
         public void Uninitialize()
         {
             _features = default;
 
-            _request?.Uninitialize();
-            _response?.Uninitialize();
+            _request.Uninitialize();
+            _response.Uninitialize();
             _connection?.Uninitialize();
             _websockets?.Uninitialize();
         }
@@ -106,12 +83,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         public override HttpResponse Response => _response;
 
         public override ConnectionInfo Connection => _connection ?? (_connection = new ReusableConnectionInfo(_features.Collection));
-
-        /// <summary>
-        /// This is obsolete and will be removed in a future version. 
-        /// The recommended alternative is to use Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.
-        /// See https://go.microsoft.com/fwlink/?linkid=845470.
-        /// </summary>
+        
         [Obsolete("This is obsolete and will be removed in a future version. The recommended alternative is to use Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions. See https://go.microsoft.com/fwlink/?linkid=845470.")]
         public override AuthenticationManager Authentication => throw new NotSupportedException();
 
@@ -174,8 +146,6 @@ namespace Microsoft.AspNetCore.Http.Internal
                 SessionFeature.Session = value;
             }
         }
-
-
 
         public override void Abort()
         {
